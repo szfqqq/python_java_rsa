@@ -1,0 +1,235 @@
+import com.unidt.bean.rsa.RsaBean;
+
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+public class AESHelper {
+
+    /**
+     * 编码格式
+     */
+    private static final String ENCODING = "UTF-8";
+    /**
+     * 签名算法
+     */
+    public static final String SIGN_ALGORITHMS = "SHA1PRNG";
+
+    /**
+     * 加密
+     *
+     * @param content
+     *            需要加密的内容
+     * @param password
+     *            加密密码
+     * @return
+     */
+    public static byte[] encrypt(String content, String password) {
+        try {
+            KeyGenerator kgen = KeyGenerator.getInstance("AES");
+            SecureRandom random = SecureRandom.getInstance(SIGN_ALGORITHMS);
+            random.setSeed(password.getBytes(ENCODING));
+            kgen.init(128, random);
+            // kgen.init(128, new SecureRandom(password.getBytes()));
+            SecretKey secretKey = kgen.generateKey();
+            byte[] enCodeFormat = secretKey.getEncoded();
+            SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");
+            Cipher cipher = Cipher.getInstance("AES");// 创建密码器
+            byte[] byteContent = content.getBytes(ENCODING);
+            cipher.init(Cipher.ENCRYPT_MODE, key);// 初始化
+            byte[] result = cipher.doFinal(byteContent);
+            System.out.println(result);
+            return result; // 加密
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 解密
+     *
+     * @param content
+     *            待解密内容
+     * @param password
+     *            解密密钥
+     * @return
+     */
+    public static byte[] decrypt(byte[] content, String password) {
+        try {
+            KeyGenerator kgen = KeyGenerator.getInstance("AES");
+            SecureRandom random = SecureRandom.getInstance(SIGN_ALGORITHMS);
+            random.setSeed(password.getBytes(ENCODING));
+            kgen.init(128, random);
+            //kgen.init(128, new SecureRandom(password.getBytes()));
+            SecretKey secretKey = kgen.generateKey();
+            byte[] enCodeFormat = secretKey.getEncoded();
+            SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");
+            System.out.println(key);
+            System.out.println("asdfghjkl");
+            Cipher cipher = Cipher.getInstance("AES");// 创建密码器
+            cipher.init(Cipher.DECRYPT_MODE, key);// 初始化
+            byte[] result = cipher.doFinal(content);
+            return result; // 加密
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 将二进制转换成16进制
+     *
+     * @param buf
+     * @return
+     */
+    public static String parseByte2HexStr(byte buf[]) {
+//        System.out.println(buf);
+//        System.out.println(buf.getClass().toString());
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < buf.length; i++) {
+            String hex = Integer.toHexString(buf[i] & 0xFF);
+            if (hex.length() == 1) {
+                hex = '0' + hex;
+            }
+            sb.append(hex.toUpperCase());
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 将16进制转换为二进制
+     *
+     * @param hexStr
+     * @return
+     */
+    public static byte[] parseHexStr2Byte(String hexStr) {
+        if (hexStr.length() < 1)
+            return null;
+        byte[] result = new byte[hexStr.length() / 2];
+        for (int i = 0; i < hexStr.length() / 2; i++) {
+            int high = Integer.parseInt(hexStr.substring(i * 2, i * 2 + 1), 16);
+            int low = Integer.parseInt(hexStr.substring(i * 2 + 1, i * 2 + 2), 16);
+            result[i] = (byte) (high * 16 + low);
+        }
+        return result;
+    }
+
+    /**
+     * 加密
+     *
+     * @param content
+     *            需要加密的内容
+     * @param password
+     *            加密密码
+     * @return
+     */
+    public static byte[] encrypt2(String content, String password) {
+        try {
+            SecretKeySpec key = new SecretKeySpec(password.getBytes(), "AES");
+            Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
+            byte[] byteContent = content.getBytes("utf-8");
+            cipher.init(Cipher.ENCRYPT_MODE, key);// 初始化
+            byte[] result = cipher.doFinal(byteContent);
+            return result; // 加密
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void main(String[] args) throws UnsupportedEncodingException {
+
+        String content = "{\n" +
+                "        \"certificate_no\": \"320621198902146578\",\n" +
+                "        \"auth_code\": \"123456\"\n" +
+                "    }";
+        String password = "123456";
+        // 加密
+        System.out.println("加密前：" + content);
+        byte[] encode = encrypt(content, password);
+        System.out.println("密文字符串qqqqqqqqqqqqqqqq：" + encode);
+        //传输过程,不转成16进制的字符串，就等着程序崩溃掉吧
+        String code = parseByte2HexStr(encode);
+        System.out.println("密文字符串：" + code);
+        byte[] decode = parseHexStr2Byte(code);
+        // 解密
+        byte[] decryptResult = decrypt(decode, password);
+        System.out.println("解密后：" + new String(decryptResult, "UTF-8")); //不转码会乱码
+
+    }
+
+    //拼接json字符串
+    public static String SplitString(String sign, RsaBean rm){
+
+        String NSign=",\"\":\"\"";
+        if(sign!="" && sign!=null){
+            NSign=sign;
+        }
+        String reqString="{\"head\":{\"partner\":\""+rm.partner+"\",";
+        reqString+="\"request_id\":\""+rm.request_id+"\",";
+        reqString+="\"request_type\":\""+rm.request_type+"\"";
+        reqString+=NSign;
+        reqString+="},";
+        reqString+="\"body\":{\"encrypt_message\":\""+rm.encrypt_message+"\"";
+        reqString+="}}";
+        return reqString;
+    }
+
+    //拼接json字符串
+    public static String ResSplitString(String sign, RsaBean rm){
+
+        String NSign=",\"\":\"\"";
+        if(sign!="" && sign!=null){
+            NSign=sign;
+        }
+        String reqString="{\"head\":{\"response_id\":\""+rm.response_id+"\",";
+        reqString+="\"response_type\":\""+rm.response_type+"\",";
+        reqString+="\"response_code\":\""+rm.response_code+"\",";
+        reqString+="\"response_result\":\""+rm.response_result+"\"";
+        reqString+=NSign;
+        reqString+="},";
+        reqString+="\"body\":{\"encrypt_message\":\""+rm.encrypt_message+"\"";
+        reqString+="}}";
+        return reqString;
+    }
+}
